@@ -22,6 +22,7 @@ const MAPB string = "mapb"
 const EXPLORE string = "explore"
 const CATCH string = "catch"
 const INSPECT string = "inspect"
+const POKEDEX string = "pokedex"
 
 const cacheTimeSeconds = 60
 
@@ -101,8 +102,8 @@ func HandleLocationAreasLister(url string) error{
 }
 
 func CommandMap(valid_commands map[string]*command, args ...string) error{
-    if args[0] != "" && len(args) > 1{
-        return errors.New("Help command cannot take more than 1 argument")
+    if args[0] != ""{
+        return errors.New("map command doesn't take any arguments.")
     }
     cmd := valid_commands[MAP]
     if LocationAreaCacher == nil{
@@ -129,7 +130,7 @@ func CommandMap(valid_commands map[string]*command, args ...string) error{
 
 func CommandMapBack(valid_commands map[string]*command, args ...string) error{
     if args[0] != "" && len(args) > 1{
-        return errors.New("Help command cannot take more than 1 argument")
+        return errors.New("mapb command doesn't take any arguments")
     }
     if LocationAreaCacher == nil{
         LocationAreaCacher = pokecache.NewCache(cacheTimeSeconds)
@@ -296,14 +297,14 @@ func CommandCatch(valid_commands map[string]*command, args ...string) error{
     randomNumber := rand.Intn(11) 
     if pokemon.BaseExperience >= 75{
         if randomNumber >= 8{
-            fmt.Printf("Yayy!! You caught %s\n",pokemon_name)
+            fmt.Printf("Yayy!! You caught %s.\nYou can now use the inspect command to view the pokemon details\n",pokemon_name)
             usersPokemons[pokemon_name] = pokemon
         }else{
             fmt.Printf("Missed!! Please try again\n")
         } 
     }else{
         if randomNumber > 4{
-            fmt.Printf("Yayy!! You caught %s\n",pokemon_name)
+            fmt.Printf("Yayy!! You caught %s.\nYou can now use the inspect command to view the pokemon details\n",pokemon_name)
             usersPokemons[pokemon_name] = pokemon
         }else{
             fmt.Printf("Missed!! Please try again\n")
@@ -339,6 +340,19 @@ func CommandInspect(valid_commands map[string]*command,args ...string) error{
     return nil
 }
 
+func CommandPokedex(valid_commads map[string]*command, args ...string) error{
+    if args[0] != ""{
+        return errors.New("pokedex doesn't take any arguments.")
+    }
+    if len(usersPokemons) == 0{
+        fmt.Println("Uhh oh you haven't caught any pokemons yet.\n Use explore command to explore pokemon in a location and catch them using the catch command!")
+    }
+    for pokemon,_ := range usersPokemons{
+        fmt.Println(" -  ",pokemon)
+    }
+    return nil
+}
+
 func main(){
     input_command := ""
     scanner := bufio.NewScanner(os.Stdin)
@@ -361,8 +375,11 @@ func main(){
                                                 description: "Attempts to catch the pokemon <pokemon_name>",
                                                 exec:CommandCatch},
                                          INSPECT:{name:"inspect",
-                                                 description: "Inspects <pokemon_name> if you caught it",
-                                                 exec:CommandInspect}}
+                                                  description: "Inspects <pokemon_name> if you caught it",
+                                                  exec:CommandInspect},
+                                         POKEDEX:{name:"pokedex",
+                                                  description: "Displays the names of pokemons you caught so far",
+                                                  exec:CommandPokedex}}
     for true{
         fmt.Printf("pokedex > ")
         scanner.Scan()  
@@ -380,4 +397,3 @@ func main(){
     }
 
 }
-
